@@ -1,4 +1,4 @@
-export VAULT_ADDR="http://$1:8200"
+export VAULT_ADDR="http://$1:$2"
 export VAULT_TOKEN=$(cat ./secrets/vault/vault_root_token)
 
 if [[ -z "$VAULT_ADDR" || -z "$VAULT_TOKEN" ]]; then

@@ -7,7 +7,7 @@ log.basicConfig(level=log.INFO, format='%(levelname)s :: %(message)s\n',)
 
 arg_parser = argparse.ArgumentParser(description='HashiCorp Vault auto unseal script')
 arg_parser.add_argument('host', help='Target Vault host IP')
-arg_parser.add_argument('port', help='Target Vault host API port')
+arg_parser.add_argument('-p', '--port', default=8200, help='Target Vault host API port')
 args = arg_parser.parse_args()
 
 VAULT_IP = args.host
