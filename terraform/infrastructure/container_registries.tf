@@ -9,7 +9,11 @@ resource "yandex_container_registry" "container_registry" {
 
 output "container_registry_id" {
   value = "Yandex Container Registry ID: ${yandex_container_registry.container_registry.id}"
+}
 
+resource "local_file" "ycr_id_file" {
+  filename = "${path.module}/../../secrets/jenkins/ycr_id"
+  content  = yandex_container_registry.container_registry.id
 }
 
 resource "yandex_container_repository" "container_repositories" {

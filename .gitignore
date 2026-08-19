@@ -9,3 +9,5 @@ ansible/*.ini
 secrets/
 vault_reset.sh
 diff.txt
+*.tar
+ansible/roles/jenkins/vars/ips.yml

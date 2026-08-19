@@ -21,6 +21,14 @@ resource "local_file" "vault_server_ip" {
   filename = "${path.module}/../vault/terraform.tfvars"
 }
 
+resource "local_file" "jcasc_ips" {
+  content  = <<-EOT
+  vault_server_ip: "${yandex_compute_instance.node["ci-server"].network_interface.0.ip_address}"
+  app_server_ip: "${yandex_compute_instance.node["app-server"].network_interface.0.ip_address}"
+  EOT
+  filename = "${path.module}/../../ansible/roles/jenkins/vars/ips.yml"
+}
+
 locals {
   localhost_public_ip = "${chomp(data.http.public_ip.response_body)}/32"
   cloud_subnets       = concat(var.cidr_a, var.cidr_b)

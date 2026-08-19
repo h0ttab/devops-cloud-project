@@ -1,6 +1,6 @@
 services:
   jenkins:
-    image: jenkins/jenkins:2.568.1-lts
+    build: .
     container_name: jenkins
     user: root
     restart: unless-stopped

@@ -6,7 +6,6 @@
   become: true
   roles:
     - docker
-    - jenkins
     - vault
 
 - name: Setup application servers

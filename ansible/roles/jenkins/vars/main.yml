@@ -1,6 +1,2 @@
-#SPDX-License-Identifier: MIT-0
----
-# vars file for role/jenkins
-jenkins_password_file_remote: /opt/jenkins_data/secrets/initialAdminPassword
-
-jenkins_password_file_local: "{{ playbook_dir }}/../secrets/jenkins/jenkins_password"
+credentials: "{{ lookup('file', playbook_dir ~ '/../secrets/jenkins/credentials.json') | from_json }}"
+os_user: "ubuntu"

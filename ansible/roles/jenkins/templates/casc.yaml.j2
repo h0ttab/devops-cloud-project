@@ -1,0 +1,48 @@
+configuration-as-code:
+  deprecated: "reject"
+  restricted: "reject"
+  unknown: "reject"
+  version: "1"
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - vaultAppRoleCredential:
+          id: "vault-approle"
+          path: "approle"
+          roleId: "{{ credentials.jenkins_role_id }}"
+          scope: GLOBAL
+          secretId: "{{ credentials.jenkins_secret_id }}"
+jenkins:
+  globalNodeProperties:
+  - envVars:
+      env:
+      - key: "APP_DIR_BASE_PATH"
+        value: "/opt/application"
+      - key: "APP_SERVER_IP"
+        value: "{{ ips.app_server_ip }}"
+      - key: "VAULT_IP"
+        value: "{{ ips.vault_server_ip }}"
+      - key: "VAULT_PORT"
+        value: "8200"
+      - key: "YCR_ID"
+        value: "{{ credentials.ycr_id }}"
+  securityRealm:
+    local:
+      users:
+      - id: "{{ credentials.admin_username }}"
+        name: "{{ credentials.admin_username }}"
+        password: "{{ credentials.admin_password_hash }}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+unclassified:
+  hashicorpVault:
+    configuration:
+      disableChildPoliciesOverride: false
+      engineVersion: 2
+      timeout: 60
+      vaultCredentialId: "vault-approle"
+      vaultUrl: "http://{{ ips.vault_server_ip }}:8200"
+jobs:
+  - file: /var/jenkins_home/job.groovy

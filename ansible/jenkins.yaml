@@ -1,0 +1,8 @@
+
+---
+
+- name: Setup Jenkins on CI/CD node
+  hosts: ci_nodes
+  become: true
+  roles:
+    - jenkins
