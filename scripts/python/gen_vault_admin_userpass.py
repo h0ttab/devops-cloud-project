@@ -3,7 +3,7 @@ import json
 import pwinput
 username = input("Enter username: ")
 
-password_bytes = pwinput.pwinput(mask='', prompt='Enter a password to hash:').encode("utf-8")
+password_bytes = pwinput.pwinput(mask='', prompt='Enter password:').encode("utf-8")
 salt = bcrypt.gensalt()
 hash = bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 
