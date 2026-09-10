@@ -1,2 +1,3 @@
 credentials: "{{ lookup('file', playbook_dir ~ '/../secrets/jenkins/credentials.json') | from_json }}"
 os_user: "ubuntu"
+app_scm_url: "https://github.com/h0ttab/shareit"
