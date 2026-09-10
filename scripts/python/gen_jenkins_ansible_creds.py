@@ -7,7 +7,7 @@ username = input("Enter username: ")
 
 password = pwinput.pwinput(mask='', prompt="Enter password: ")
 password_bytes = password.encode("utf-8")
-salt = bcrypt.gensalt()
+salt = bcrypt.gensalt(prefix=b"2a")
 hash = bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 
 jenkins_approle = None
@@ -21,7 +21,7 @@ with open ("./secrets/jenkins/ycr_id", "r") as file:
 
 data = {
     "admin_username": username,
-    "admin_password_hash": password,
+    "admin_password_hash": f"#jbcrypt:{hash}",
     "jenkins_role_id": jenkins_approle["role_id"],
     "jenkins_secret_id": jenkins_approle["secret_id"],
     "ycr_id": container_registry_id
