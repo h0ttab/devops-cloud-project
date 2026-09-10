@@ -4,7 +4,6 @@ questions.md
 .terraform/
 *.tfstate
 *.tfstate.*
-*.tfvars
 ansible/*.ini
 secrets/
 *_reset.sh

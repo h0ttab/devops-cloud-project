@@ -24,10 +24,7 @@ resource "yandex_container_repository" "container_repositories" {
 
 variable "repositories" {
   type = set(string)
-  default = [
-    "shareit-server",
-    "shareit-gateway"
-  ]
+  description = "List of container repository names to create"
 }
 
 resource "yandex_container_repository_lifecycle_policy" "container_repository_lifecycle_policy" {
