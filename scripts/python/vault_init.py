@@ -5,7 +5,7 @@ import logging as log
 
 log.basicConfig(level=log.INFO, format='%(levelname)s :: %(message)s\n',)
 
-arg_parser = argparse.ArgumentParser(description='HashiCorp Vault auto unseal script')
+arg_parser = argparse.ArgumentParser(description='HashiCorp Vault initialization and unseal script')
 arg_parser.add_argument('host', help='Target Vault host IP')
 arg_parser.add_argument('-p', '--port', default=8200, help='Target Vault host API port')
 args = arg_parser.parse_args()
@@ -46,7 +46,7 @@ def initialize_vault(initialized: bool) -> None:
     r_json = r.json()
 
     if 'errors' in r_json:
-        log.error(f'Error while initializing Vault: {r_json['errors']}')
+        log.error(f"Error while initializing Vault: {r_json['errors']}")
         exit(1)
 
     data = json.dumps(r_json, indent=4, sort_keys=True)
@@ -67,7 +67,7 @@ def get_seal_status() -> bool:
     return data['sealed']
 
 
-def get_bootstrap_keys(path: str) -> list[str]:
+def get_bootstrap_keys(path: str) -> dict:
     log.info('Loading Vault keys...')
     with open(path, 'r') as file:
         data = file.read()
@@ -83,7 +83,7 @@ def unseal_vault(secret_share: str, share_index: int, shares_required: int, tota
     data = response.json()
 
     if 'errors' in data or 'sealed' not in data:
-        log.error(f'Error while unsealing Vault: {data['errors']}')
+        log.error(f"Error while unsealing Vault: {data['errors']}")
 
 
 if __name__ == '__main__':
