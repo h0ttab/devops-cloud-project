@@ -187,11 +187,13 @@ Jenkins разворачивается без ручной конфигурац�
 ### Требования
 > **Для пользователей Windows:** запуск необходимо выполнять внутри **WSL2** либо внутри виртуальной машины с Ubuntu 22.04+.
 
+> **Для пользователей из России и Беларуси:** для установки Terraform с официального сайта и установки необходимых провайдеров через `terraform init` может потребоваться VPN для смены IP-адреса в связи с региональными ограничениями по IP на стороне HashiCorp.
+
 Для запуска проекта необходимы:
 * macOS / Linux с графическим интерфейсом (работоспособность проверена на `macOS 15.7.9` и `Ubuntu 22.04`)
 * Terraform `>= 1.15.8`
 * Ansible `>= 2.21.2` + коллекция `community.docker` (установка: `ansible-galaxy collection install community.docker`)
-* Python `>= 3.14.6` с `pip`
+* Python `>= 3.14.6` + `python3-pip` + `python3-venv`
 * Yandex Cloud CLI (`yc`)
 * OpenSSH client
 * Git
@@ -309,7 +311,7 @@ ssh-keygen -t ed25519 -f secrets/ssh/cloud_ssh_key -N ""
 
 #### 1. Переменные Terraform
 
-Обновите `terraform/infrastructure/terraform.tfvars`
+Отредактируйте `terraform/infrastructure/terraform.tfvars` под свои `cloud_id` и `folder_id`.
 
 Например:
 
@@ -320,7 +322,7 @@ folder_id = "<YOUR_YANDEX_FOLDER_ID>"
 repositories = ["shareit-server", "shareit-gateway"]
 ```
 
-Переменная `repositories` содержит названия Docker-репозиториев, которые будут созданы в Yandex Container Registry (YCR).
+Переменная `repositories` содержит названия Docker-репозиториев, которые будут созданы в Yandex Container Registry (YCR). Для развёртывания демонстрационного приложения оставьте значение по умолчанию.
 
 Репозитории создаются заранее, чтобы к ним можно было сразу привязать lifecycle policies.
 
