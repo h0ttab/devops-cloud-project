@@ -182,22 +182,22 @@ Jenkins разворачивается без ручной конфигурац�
 
 ## Руководство по запуску
 
-> **Важно:** все команды и скрипты необходимо выполнять из корневой директории проекта, если явно не указано иное.
+### **Важно:** все команды и скрипты необходимо выполнять из корневой директории проекта, если явно не указано иное.
 
 ### Требования
+> **Для пользователей Windows:** запуск необходимо выполнять внутри **WSL2** либо внутри виртуальной машины с Ubuntu 22.04+.
 
 Для запуска проекта необходимы:
-
+* macOS / Linux с графическим интерфейсом (работоспособность проверена на `macOS 15.7.9` и `Ubuntu 22.04`)
 * Terraform `>= 1.15.8`
 * Ansible `>= 2.21.2` + коллекция `community.docker` (установка: `ansible-galaxy collection install community.docker`)
 * Python `>= 3.14.6` с `pip`
 * Yandex Cloud CLI (`yc`)
 * OpenSSH client
 * Git
-* Bash
+* Bash / zsh
 * cURL
-
-Для Windows проект необходимо запускать внутри **WSL2 (Ubuntu 22.04+)** либо виртуальной машины с **Ubuntu 22.04+**.
+* Mozilla Firefox / Google Chrome актуальной версии
 
 ### Последовательность развертывания
 
@@ -229,16 +229,22 @@ Healthcheck
 
 ### Подготовка облачной среды
 
-Для работы Terraform требуется учётная запись в Yandex, настроенный профиль `yc` и сервисный аккаунт с ролью `editor` в целевом каталоге Yandex Cloud. Подробнее об установке `yc` и настройке профиля можно прочитать в [официальной документации Yandex Cloud](https://yandex.cloud/ru/docs/cli/quickstart).
+Для работы Terraform потребуется учётная запись в Yandex, настроенный профиль `yc` и сервисный аккаунт с ролью `editor` в целевом каталоге Yandex Cloud. 
 
-#### 1. Создайте сервисный аккаунт для Terraform
+#### 1. Установите Yandex Cloud CLI
+
+Установите и настройте `yc` следуя инструкции из [официальной документации Yandex Cloud](https://yandex.cloud/ru/docs/cli/quickstart).
+
+> ⚠️ **Важно:** Выполняйте инициализацию профиля `yc init` от имени вашего обычного пользователя. **Не используйте** `sudo` или пользователя `root`, иначе `yc` не сможет корректно взаимодействовать с браузером.
+
+#### 2. Создайте сервисный аккаунт для Terraform
 
 ```bash
 yc iam service-account create terraform-sa \
    --description "Service account for Terraform infrastructure management"
 ```
 
-#### 2. Назначьте сервисному аккаунту роль
+#### 3. Назначьте сервисному аккаунту роль
 
 Подробнее: [документация Yandex Cloud IAM](https://yandex.cloud/ru/docs/iam/operations/sa/assign-role-for-sa)
 
@@ -248,7 +254,7 @@ yc resource-manager folder add-access-binding <YOUR_FOLDER_ID> \
    --subject serviceAccount:<TERRAFORM_SA_ID>
 ```
 
-#### 3. Создайте JSON-ключ
+#### 4. Создайте JSON-ключ
 
 ```bash
 yc iam key create \
@@ -268,6 +274,10 @@ git clone https://github.com/h0ttab/devops-cloud-project.git
 
 cd devops-cloud-project
 
+# Создание и активация виртуального окружения Python, в которое будут установлены библиотеки, необходимые для дальнейших шагов
+python3 -m venv venv
+source venv/bin/activate
+
 pip install -r scripts/python/requirements.txt
 ```
 
@@ -277,17 +287,13 @@ pip install -r scripts/python/requirements.txt
 python3 scripts/python/init_secrets_dir_structure.py
 ```
 
-Скрипт создает необходимую структуру автоматически.
+Скрипт создает необходимую структуру автоматически. Если структура директорий успешно создана, в терминале вы увидите `Secrets directories structure generated successfully`.
 
 ### Внедрение первичных секретов
 
 #### 1. Ключ сервисного аккаунта Terraform
 
-Переместите созданный ранее JSON-ключ в:
-
-```text
-secrets/cloud/terraform-sa-key.json
-```
+Переместите созданный ранее JSON-ключ в `secrets/cloud/terraform-sa-key.json`
 
 #### 2. SSH-ключ для CI/CD и доступа к хостам
 
@@ -303,11 +309,7 @@ ssh-keygen -t ed25519 -f secrets/ssh/cloud_ssh_key -N ""
 
 #### 1. Переменные Terraform
 
-Обновите:
-
-```text
-terraform/infrastructure/terraform.tfvars
-```
+Обновите `terraform/infrastructure/terraform.tfvars`
 
 Например:
 
@@ -326,11 +328,7 @@ repositories = ["shareit-server", "shareit-gateway"]
 
 #### 2. (Опционально) Git-репозиторий приложения
 
-Для развертывания собственного приложения измените URL репозитория в:
-
-```text
-ansible/roles/jenkins/vars/main.yml
-```
+Для развертывания собственного приложения измените URL репозитория в `ansible/roles/jenkins/vars/main.yml`
 
 ```yaml
 app_scm_url: "https://github.com/<YOUR_USERNAME>/<YOUR_APP>.git"
@@ -415,11 +413,7 @@ python3 scripts/python/gen_vault_admin_userpass.py
 
 Создается постоянная учетная запись администратора и генерируется Bcrypt-хэш пароля.
 
-Результат:
-
-```text
-secrets/vault/vault_admin_credentials.json
-```
+Результат сохраняется по пути `secrets/vault/vault_admin_credentials.json`
 
 #### Шаг 6: Декларативная настройка Vault
 
