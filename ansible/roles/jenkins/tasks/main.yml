@@ -17,12 +17,21 @@
     - jenkins
     - jenkins_data
 
-- name: Generate a templated file for Jenkins configuration
+- name: Generate a templated files for Jenkins configuration (JCasC) and job (JobDSL)
   template:
-    src: casc.yaml.j2
-    dest: "{{ jenkins_dir.results[0].path }}/casc.yaml"
+    src: "{{ item.value.src }}"
+    dest: "{{ item.value.dest }}"
     mode: '0600'
     owner: "{{ os_user }}"
+  loop: "{{ files | dict2items }}"
+  vars:
+    files:
+      casc:
+        src: casc.yaml.j2
+        dest: "{{ jenkins_dir.results[0].path }}/casc.yaml"
+      job:
+        src: job.groovy.j2
+        dest: "{{ jenkins_dir.results[1].path }}/job.groovy"
 
 - name: Copy necessary files to Jenkins directory on the server
   copy:
@@ -40,9 +49,6 @@
       plugins:
         src: plugins.txt
         dest: "{{ jenkins_dir.results[0].path }}/plugins.txt"
-      job:
-        src: job.groovy
-        dest: "{{ jenkins_dir.results[1].path }}/job.groovy"
 
 - name: Start Jenkins container
   community.docker.docker_compose_v2:

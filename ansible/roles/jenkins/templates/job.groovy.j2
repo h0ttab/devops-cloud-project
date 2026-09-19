@@ -11,7 +11,7 @@ pipelineJob('install-app') {
             scm {
                 git {
                     remote {
-                        url(System.getenv('APP_SCM_URL'))
+                        url( '{{ app_scm_url }}' )
                     }
                     branches('main')
                 }
@@ -19,6 +19,4 @@ pipelineJob('install-app') {
             scriptPath('Jenkinsfile')
         }
     }
-
-    queue('install-app')
 }
