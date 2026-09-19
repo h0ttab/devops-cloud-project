@@ -6,7 +6,6 @@ questions.md
 *.tfstate.*
 ansible/*.ini
 secrets/
-*_reset.sh
 diff.txt
 *.tar
 ansible/roles/jenkins/vars/ips.yml
