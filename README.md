@@ -567,6 +567,10 @@ http://<APP_SERVER_PUBLIC_IP>:8080/actuator/health
 Для этого выполните команду:
 
 ```bash
+# Перед первым выполнением добавьте своему аккаунту роль "container-registry.registries.forceDeleter". User Account ID можно узнать командой `yc iam whoami`.
+
+# yc container registry add-access-binding container-registry --role container-registry.registries.forceDeleter --subject userAccount:<USER_ACCOUNT_ID>
+
 yc container registry force-delete container-registry
 ```
 
