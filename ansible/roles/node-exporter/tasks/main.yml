@@ -1,0 +1,48 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for node-exporter
+
+- name: Create Prometheus node exporter user
+  user:
+    name: node_exporter
+    system: yes
+    create_home: no
+    shell: /usr/sbin/nologin
+
+
+- name: Download Node Exporter
+  get_url:
+    url: "{{ node_exporter_download_url }}"
+    dest: "/var/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    mode: 0755
+    timeout: 60
+  register: download_result
+  until: download_result is succeeded
+  retries: 5
+  delay: 10
+
+- name: Unarchive Node Exporter
+  unarchive:
+    src: "/var/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /var/tmp
+    remote_src: yes
+
+- name: Copy node exporter executable to /usr/local/bin
+  copy:
+    src: "/var/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: /usr/local/bin/node_exporter
+    mode: 0755
+    owner: node_exporter
+    remote_src: yes
+
+- name: Copy node exporter service file to the remote host
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Setup systemd for node exporter
+  systemd_service:
+    state: started
+    name: node_exporter.service
+    enabled: true
+    daemon_reload: true
