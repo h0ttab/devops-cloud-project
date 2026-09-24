@@ -1,14 +1,16 @@
 # Automated Cloud Infrastructure & CI/CD Pipeline
 
+![Docker](https://img.shields.io/badge/Docker-29.4.1-2496ED?style=flat\&logo=docker\&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-1.15.8-844FBA?style=flat\&logo=terraform\&logoColor=white)
 ![Ansible](https://img.shields.io/badge/Ansible-2.21.2-EE0000?style=flat\&logo=ansible\&logoColor=white)
-![HashiCorp Vault](https://img.shields.io/badge/Vault-2.0.3-000000?style=flat\&logo=vault\&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-3.13.3-E6522C?style=flat&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-13.0-F46800?style=flat&logo=grafana&logoColor=white)
 ![Jenkins](https://img.shields.io/badge/Jenkins-2.568.2-D24939?style=flat\&logo=jenkins\&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-29.4.1-2496ED?style=flat\&logo=docker\&logoColor=white)
+![HashiCorp Vault](https://img.shields.io/badge/Vault-2.0.3-000000?style=flat\&logo=vault\&logoColor=white)
 ![Yandex Cloud](https://img.shields.io/badge/Yandex_Cloud-IaaS-FC3F1D?style=flat\&logo=yandex\&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.14.6-3776AB?style=flat\&logo=python\&logoColor=white)
 
-Демонстрационный проект автоматизированного развертывания облачной инфраструктуры и организации CI/CD в Yandex Cloud.
+Демонстрационный проект автоматизированного развёртывания облачной инфраструктуры и организации CI/CD в Yandex Cloud.
 
 Система реализует подходы **Infrastructure as Code (IaC)** и **Configuration as Code (CaC)**: от создания сетевой инфраструктуры и вычислительных узлов до настройки сервисов, управления секретами и автоматической доставки Java-приложения.
 
@@ -24,26 +26,28 @@
   * [Управление секретами и безопасность](#управление-секретами-и-безопасность)
   * [Infrastructure as Code и автоматизация](#infrastructure-as-code-и-автоматизация)
   * [CI/CD и Jenkins as Code](#cicd-и-jenkins-as-code)
+  * [Метрики и логи (Observability)](#метрики-и-логи-observability)
 * [Руководство по запуску](#руководство-по-запуску)
 
   * [Требования](#требования)
-  * [Последовательность развертывания](#последовательность-развертывания)
+  * [Последовательность развёртывания](#последовательность-развёртывания)
   * [Подготовка облачной среды](#подготовка-облачной-среды)
   * [Подготовка окружения и секретов](#подготовка-окружения-и-секретов)
 
     * [Внедрение первичных секретов](#внедрение-первичных-секретов)
   * [Конфигурация проекта](#конфигурация-проекта)
-  * [Развертывание платформы](#развертывание-платформы)
+  * [Развёртывание платформы](#развёртывание-платформы)
 
     * [Если что-то пошло не так с развёртыванием Vault или Jenkins](#если-что-то-пошло-не-так-с-развёртыванием-vault-или-jenkins)  
     * [Шаг 1: Облачная инфраструктура](#шаг-1-облачная-инфраструктура)
     * [Шаг 2: Базовая настройка узлов](#шаг-2-базовая-настройка-узлов)
     * [Шаг 3: Инициализация Vault](#шаг-3-инициализация-vault)
     * [Шаг 4: Настройка сервисной роли Terraform](#шаг-4-настройка-сервисной-роли-terraform)
-    * [Шаг 5: Учетная запись администратора Vault](#шаг-5-учетная-запись-администратора-vault)
+    * [Шаг 5: Учётная запись администратора Vault](#шаг-5-учётная-запись-администратора-vault)
     * [Шаг 6: Декларативная настройка Vault](#шаг-6-декларативная-настройка-vault)
-    * [Шаг 7: Учетная запись администратора Jenkins](#шаг-7-учетная-запись-администратора-jenkins)
-    * [Шаг 8: Развертывание Jenkins](#шаг-8-развертывание-jenkins)
+    * [Шаг 7: Учётная запись администратора Jenkins](#шаг-7-учётная-запись-администратора-jenkins)
+    * [Шаг 8: Учётная запись администратора Grafana](#шаг-8-учётная-запись-администратора-grafana)
+    * [Шаг 9: Развёртывание Jenkins и стека мониторинга](#шаг-9-развёртывание-jenkins-и-стека-мониторинга)
   * [Проверка работоспособности и запуск доставки](#проверка-работоспособности-и-запуск-доставки)
   * [Удаление инфраструктуры](#удаление-инфраструктуры)
 * [Jenkinsfile](#jenkinsfile)
@@ -53,17 +57,17 @@
 
 Проект демонстрирует практическую реализацию:
 
-* **Provisioning (IaC)** — управление ресурсами Yandex Cloud через Terraform: VPC, подсети, группы безопасности, виртуальные машины, Container Registry и сервисные учетные записи.
+* **Provisioning (IaC)** — управление ресурсами Yandex Cloud через Terraform: VPC, подсети, группы безопасности, виртуальные машины, Container Registry и сервисные учётные записи.
 * **Configuration Management** — подготовка операционной системы на удалённых хостах, установка Docker и запуск базовых сервисов через модульные роли Ansible.
 * **Secrets Management** — хранение и выдача секретов через HashiCorp Vault. Инициализация и настройка Vault автоматизированы с помощью Python, Bash и Terraform Vault Provider.
-* **Jenkins as Code** — воспроизводимое развертывание Jenkins через JCasC и Job DSL с авторизацией в Vault по модели AppRole.
+* **Jenkins as Code** — воспроизводимое развёртывание Jenkins через JCasC и Job DSL с авторизацией в Vault по модели AppRole.
 * **Delivery Pipeline** — multi-stage сборка Docker-образов, публикация в Yandex Container Registry и автоматический деплой на целевой сервер.
 
 ## Архитектура системы
 
 ### Инфраструктурная топология
 
-Инфраструктура развернута в изолированной виртуальной сети **Yandex Cloud VPC** и разделена между управляющим узлом `ci-server` и целевым узлом `app-server`.
+Инфраструктура развёрнута в изолированной виртуальной сети Yandex Cloud VPC и разделена между управляющим узлом `ci-server`, целевым узлом приложения `app-server` и узлом мониторинга `obs-server`.
 
 ```mermaid
 graph TB
@@ -73,21 +77,22 @@ graph TB
         subgraph SubnetA ["Subnet A (ru-central1-a: 10.10.1.0/24)"]
 
             subgraph CIServer ["CI Node (ci-server)"]
-
                 Jenkins["Jenkins (JCasC + Job DSL)<br/>:8080"]
-
                 Vault["HashiCorp Vault Server<br/>:8200"]
-
+                NodeExpCI["Node Exporter<br/>:9100"]
             end
 
             subgraph AppServer ["App Node (app-server)"]
-
                 Gateway["API Gateway (Java)<br/>:8080"]
-
                 Backend["Core Backend (Java)<br/>:9090"]
-
                 Postgres[("PostgreSQL<br/>:5432")]
+                NodeExpApp["Node Exporter<br/>:9100"]
+            end
 
+            subgraph ObsServer ["Observability Node (obs-server)"]
+                Prometheus["Prometheus<br/>:9090"]
+                Grafana["Grafana<br/>:3000"]
+                NodeExpObs["Node Exporter<br/>:9100"]
             end
 
         end
@@ -97,16 +102,19 @@ graph TB
     end
 
     User(["Engineer"]) -->|SSH / HTTP| CIServer
-
     User -->|HTTP :8080| Gateway
+    User -->|HTTP :3000| Grafana
 
     Jenkins -->|Auth / Read Secrets| Vault
-
     Jenkins -->|Docker Push / Pull| YCR
-
     Jenkins -->|SSH Deploy / Compose| AppServer
 
     Gateway --> Backend --> Postgres
+
+    Prometheus -.->|Scrape :9100| NodeExpCI
+    Prometheus -.->|Scrape :9100| NodeExpApp
+    Prometheus -.->|Scrape :9100| NodeExpObs
+    Grafana -->|Query PromQL| Prometheus
 ```
 
 ### Сквозной процесс доставки
@@ -131,9 +139,9 @@ sequenceDiagram
 
     Note over Admin,V: Фаза 2: Secrets Management
 
-    Admin->>Ans: Развертывание Docker и Vault
+    Admin->>Ans: Развёртывание Docker и Vault
     Admin->>V: Инициализация Vault (Python + Vault API)
-    Admin->>V: Настройка политик, AppRole и учетных данных (Terraform Vault Provider)
+    Admin->>V: Настройка политик, AppRole и учётных данных (Terraform Vault Provider)
 
     Note right of V: Отзыв первоначального Root Token
 
@@ -158,11 +166,12 @@ sequenceDiagram
 
 ### Управление секретами и безопасность
 
-* **Секреты не хранятся VCS:** чувствительные данные не хранятся в исходном коде и формируются динамически в процессе развертывания.
+* **Секреты не хранятся VCS:** чувствительные данные не хранятся в исходном коде и формируются динамически в процессе развёртывания.
 * **Жизненный цикл Vault Root Token:** первоначальный `root_token` Vault используется для создания сервисной роли Terraform AppRole, после чего отзывается автоматизированным скриптом.
-* **Пароли хранятся только в виде хэшей:** учетные записи администраторов Vault и Jenkins создаются с предварительно вычисленными Bcrypt-хэшами. В конфигурационные файлы и Terraform state передаются только хэши (`password_hash_wo`).
+* **Пароли хранятся только в виде хэшей:** учётные записи администраторов Vault и Jenkins создаются с предварительно вычисленными Bcrypt-хэшами. В конфигурационные файлы и Terraform state передаются только хэши (`password_hash_wo`).
 * **Эфемерные SSH ключи:** Jenkins получает приватный SSH-ключ из Vault в память, записывает его во временный файл с правами `0400` только на время деплоя и удаляет его в `post { always }`.
-* **Динамическая подстройка фаерволла:** внешний IP-адрес администратора определяется динамически через `data "http"` и используется для формирования правил Security Groups с маской `/32`.
+* **Динамическая подстройка фаервола:** внешний IP-адрес администратора определяется динамически через `data "http"` и используется для формирования правил Security Groups с маской `/32`.
+* **Сегментация Security Groups**: правила фаервола разделены на атомарные группы безопасности (sg_ssh, sg_http, sg_vault, sg_prometheus и др.) в целях соблюдения принципа наименьших привилегий (least privilege).
 
 ### Infrastructure as Code и автоматизация
 
@@ -170,6 +179,11 @@ sequenceDiagram
 * **Автоматическая передача инфраструктурных параметров:** IP-адреса и другие выходные значения Terraform используются для генерации Ansible inventory и параметров ролей.
 * **Lifecycle management для OCI-образов:** используется `yandex_container_repository_lifecycle_policy` для автоматической очистки устаревших и `untagged` образов.
 * **Docker Buildx + Multi-stage сборка:** сборка выполняется через Docker Buildx с использованием подхода Docker-outside-of-Docker и необходимых CLI-плагинов.
+* **Устойчивость деплоя инфраструктуры к сетевым сбоям:** для сетевых операций в Ansible (загрузка GPG-ключей, установка пакетов, запуск compose) настроены механизмы retries, delay и until для предотвращения сбоев при кратковременных сетевых задержках.
+
+### Метрики и логи (Observability)
+
+* **Автоматизированное развёртывание стека мониторинга:** развёртывание Prometheus и Grafana полностью автоматизировано. Источники данных (Datasources) и дашборды («Node Exporter Full») автоматически настраиваются через YAML/JSON конфигурации без необходимости ручной настройки в UI Grafana. Установка Node Exporter и интеграция с Prometheus также автоматизированы через Ansible.
 
 ### CI/CD и Jenkins as Code
 
@@ -203,7 +217,7 @@ Jenkins разворачивается без ручной конфигурац�
 * cURL
 * Mozilla Firefox / Google Chrome актуальной версии
 
-### Последовательность развертывания
+### Последовательность развёртывания
 
 ```text
 Terraform
@@ -218,7 +232,9 @@ Vault bootstrap
    ↓
 Terraform Vault Provider
    ↓
-Jenkins JCasC + Job DSL
+Prometheus & Grafana Stack
+   ↓
+Jenkins (JCasC + Job DSL)
    ↓
 Build application images
    ↓
@@ -350,15 +366,15 @@ repositories = ["shareit-server", "shareit-gateway"]
 
 #### 2. (Опционально) Git-репозиторий приложения
 
-Для развертывания собственного приложения измените URL репозитория в `ansible/roles/jenkins/vars/main.yml`
+Для развёртывания собственного приложения измените URL репозитория в `ansible/roles/jenkins/vars/main.yml`
 
 ```yaml
 app_scm_url: "https://github.com/<YOUR_USERNAME>/<YOUR_APP>.git"
 ```
 
-### Развертывание платформы
+### Развёртывание платформы
 
-Развертывание выполняется строго в указанном порядке для соблюдения последовательности зависимостей между инфраструктурой, Vault и Jenkins.
+Развёртывание выполняется строго в указанном порядке для соблюдения последовательности зависимостей между инфраструктурой, Vault и Jenkins.
 
 #### Если что-то пошло не так с развёртыванием Vault или Jenkins
 
@@ -367,19 +383,19 @@ app_scm_url: "https://github.com/<YOUR_USERNAME>/<YOUR_APP>.git"
 Если вы столкнулись с подобной проблемой, то воспользуйтесь соответствующим скриптом, который сбросит сервис (Vault / Jenkins) до состояния чистой установки: 
    - останавливается и удаляется контейнер сервиса;
    - удаляются все сохранённые данные сервиса;
-   - (только для Vault) автоматически запустится Ansible playbook, который развернёт новый контейнер Vault.
+   - (только для Vault) автоматически запустится Ansible playbook, который развёрнёт новый контейнер Vault.
 
 Для Vault:
 ```bash
 bash ./scripts/bash/vault_reset.sh <CI_SERVER_PUBLIC_IP>
 ```
-> После сброса Vault необходимо будет заново выполнить шаги 3-6 из раздела ["Развертывание платформы"](#шаг-3-инициализация-vault).
+> После сброса Vault необходимо будет заново выполнить шаги 3-6 из раздела ["Развёртывание платформы"](#шаг-3-инициализация-vault).
 
 Для Jenkins:
 ```bash
 bash ./scripts/bash/jenkins_reset.sh <CI_SERVER_PUBLIC_IP>
 ```
-> После сброса Jenkins необходимо будет выполнить шаги 7-8 из раздела ["Развертывание платформы"](#шаг-7-учетная-запись-администратора-jenkins).
+> После сброса Jenkins необходимо будет выполнить шаги 7-9 из раздела ["Развёртывание платформы"](#шаг-7-учётная-запись-администратора-jenkins).
 
 #### Шаг 1: Облачная инфраструктура
 
@@ -398,24 +414,24 @@ cd ../..
 
 * подсеть и группы безопасности;
 * Container Registry и репозитории;
-* две виртуальные машины;
+* три виртуальные машины (ci-server, app-server, obs-server);
 * сервисный аккаунт для работы с реестром;
 * необходимые IAM-права и lifecycle policies;
 * `ansible/inventory.ini`;
 * `terraform/vault/terraform.tfvars`;
-* `ansible/roles/jenkins/vars/ips.yml`.
+* `ansible/ips.yml`.
 
 #### Шаг 2: Базовая настройка узлов
 
 ```bash
 cd ansible
 
-ansible-playbook main.yaml
+ansible-playbook stage_1.yaml
 
 cd ..
 ```
 
-На узлах устанавливается Docker и необходимые зависимости. На `ci-server` запускается sealed-контейнер HashiCorp Vault.
+На всех трех узлах устанавливается Docker и разворачивается systemd-сервис Node Exporter. На `ci-server` запускается sealed-контейнер HashiCorp Vault. На `app-server` подготавливаются каталоги для приложения.
 
 #### Шаг 3: Инициализация Vault
 
@@ -445,16 +461,16 @@ bash scripts/bash/vault_config_terraform.sh \
 
 * создается AppRole `terraform`;
 * назначается политика `terraform-admin`;
-* учетные данные сохраняются в `secrets/vault/approle/terraform_approle.json`;
+* учётные данные сохраняются в `secrets/vault/approle/terraform_approle.json`;
 * первоначальный `root_token` отзывается.
 
-#### Шаг 5: Учетная запись администратора Vault
+#### Шаг 5: Учётная запись администратора Vault
 
 ```bash
 python3 scripts/python/gen_vault_admin_userpass.py
 ```
 
-Создается постоянная учетная запись администратора и генерируется Bcrypt-хэш пароля.
+Создается постоянная учётная запись администратора и генерируется Bcrypt-хэш пароля.
 
 Результат сохраняется по пути `secrets/vault/vault_admin_credentials.json`
 
@@ -476,12 +492,12 @@ cd ../..
 * движок секретов KV v2;
 * политика `jenkins`;
 * AppRole `jenkins`;
-* сгенерированные учетные данные для БД приложения;
+* сгенерированные учётные данные для БД приложения;
 * секреты с SSH-ключами;
-* учетные данные `jenkins` AppRole.
+* учётные данные `jenkins` AppRole.
 * файл `secrets/vault/approle/jenkins_approle.json`
 
-#### Шаг 7: Учетная запись администратора Jenkins
+#### Шаг 7: Учётная запись администратора Jenkins
 
 ```bash
 python3 scripts/python/gen_jenkins_creds.py
@@ -491,14 +507,22 @@ python3 scripts/python/gen_jenkins_creds.py
 
 * логин и Bcrypt-хэш пароля администратора;
 * ID Yandex Container Registry;
-* учетные данные AppRole для Vault.
+* учётные данные AppRole для Vault.
 
-#### Шаг 8: Развертывание Jenkins
+#### Шаг 8: Учётная запись администратора Grafana
+
+```bash
+python3 scripts/python/gen_grafana_creds.py
+```
+
+Позволяет задать логин и пароль для учётной записи администратора Grafana. Сохраняет полученные учётные данные в `secrets/grafana/credentials.json`.
+
+#### Шаг 9: Развёртывание Jenkins и стека мониторинга
 
 ```bash
 cd ansible
 
-ansible-playbook jenkins.yaml
+ansible-playbook stage_2.yaml
 
 cd ..
 ```
@@ -510,10 +534,29 @@ cd ..
 * применяется `casc.yaml` через плагин JCasC;
 * настраиваются пользователи и интеграция с Vault;
 * Job DSL создает задачу (job) `install-app`;
+* На `obs-server` разворачиваются Prometheus и Grafana;
+* В Prometheus настраивается сбор метрик со всех узлов сети при помощи Node Exporter;
+* В Grafana автоматически импортируется дашборд системных метрик (Node Exporter Full) и подключается Prometheus в качестве источника данных (datasource).
+
 
 ## Проверка работоспособности и запуск доставки
 
 ### 1. Доступ к интерфейсам
+**Jenkins UI**
+
+```text
+http://<CI_SERVER_PUBLIC_IP>:8080
+```
+
+Используются учётные данные из шага 7.
+
+**Grafana UI**
+
+```text
+http://<OBS_SERVER_PUBLIC_IP>:3000
+```
+
+Используются учётные данные из шага 8.
 
 **HashiCorp Vault UI**
 
@@ -521,15 +564,7 @@ cd ..
 http://<CI_SERVER_PUBLIC_IP>:8200
 ```
 
-Аутентификация выполняется через выбор способа авторизации `Userpass` с учетными данными из шага 5.
-
-**Jenkins UI**
-
-```text
-http://<CI_SERVER_PUBLIC_IP>:8080
-```
-
-Используются учетные данные из шага 7.
+Аутентификация выполняется через выбор способа авторизации `Userpass` с учётными данными из шага 5.
 
 ### 2. Запуск pipeline
 
@@ -558,13 +593,13 @@ Healthcheck API Gateway:
 http://<APP_SERVER_PUBLIC_IP>:8080/actuator/health
 ```
 
-Можно открыть адрес через браузер или выполнить GET-запрос. Статус ответа HTTP `200` означает, что приложение успешно развернуто и отвечает на запросы.
+Можно открыть адрес через браузер или выполнить GET-запрос. Статус ответа HTTP `200` означает, что приложение успешно развёрнуто и отвечает на запросы.
 
 ## Удаление инфраструктуры
 
-Перед удалением инфраструктуры необходимо вручную удалить Container Registry, так как непустой реестр нельзя удалить через Terraform стандартным способом.
+Перед удалением инфраструктуры необходимо вручную удалить Yandex Container Registry (так как непустой реестр нельзя удалить через Terraform стандартным способом) и удалить данные о реестре и репозиториях из `terraform.tfstate`.
 
-Для этого выполните команду:
+Удаление Yandex Container Registry со всем содержимым:
 
 ```bash
 # Перед первым выполнением добавьте своему аккаунту роль "container-registry.registries.forceDeleter". User Account ID можно узнать командой `yc iam whoami`.
@@ -576,7 +611,15 @@ yc container registry force-delete container-registry
 
 > Если по какой-то причине удалить реестр через команду не получится, то можно удалить его через [веб-консоль Yandex Cloud](https://console.yandex.cloud/).
 
-После этого удалите инфраструктуру через Terraform:
+Удаление реестра и репозиториев из state-файла terraform:
+
+```bash
+terraform state rm 'yandex_container_repository_lifecycle_policy.container_repository_lifecycle_policy' 2>/dev/null || true; \
+terraform state rm 'yandex_container_repository.container_repositories' 2>/dev/null || true; \
+terraform state rm 'yandex_container_registry.container_registry' 2>/dev/null || true
+```
+
+После этого удалите остальную инфраструктуру через Terraform:
 
 ```bash
 cd terraform/infrastructure
@@ -603,14 +646,12 @@ Jenkinsfile в этом репозитории приведен как част�
 
 ### Хранилище артефактов
 
-* Развертывание локального **Sonatype Nexus**.
+* Развёртывание локального **Sonatype Nexus**.
 * Переход от Yandex Container Registry к собственному OCI реестру (Nexus).
 * Адаптация CI/CD pipeline под работу с локальным реестру образов.
 
 ### Observability
 
-* Prometheus + Grafana.
-* `node-exporter` и `cAdvisor`.
 * Fluent Bit для сбора логов.
 * OpenSearch и OpenSearch Dashboards.
 * Alertmanager для алертинга.

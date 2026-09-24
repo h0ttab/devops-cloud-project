@@ -63,7 +63,7 @@
     mode: '0644'
     owner: "{{ grafana_user_id }}"
 
-- name: Copy grafana sercrets to grafana home directory
+- name: Copy grafana secrets to grafana home directory
   copy:
     dest: "{{ item.value.dest }}"
     content: "{{ item.value.content }}"
