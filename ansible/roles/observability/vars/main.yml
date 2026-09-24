@@ -1,1 +1,3 @@
 grafana_credentials: "{{ lookup('file', playbook_dir ~ '/../secrets/grafana/credentials.json') | from_json }}"
+grafana_version: "13.0"
+prometheus_version: "3.13.3"
