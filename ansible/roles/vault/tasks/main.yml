@@ -29,3 +29,7 @@
 - name: Start Vault container
   community.docker.docker_compose_v2:
     project_src: "{{ vault_home }}"
+  register: docker_compose_result
+  until: docker_compose_result is succeeded
+  retries: 5
+  delay: 10

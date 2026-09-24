@@ -19,7 +19,11 @@
     url: "{{ docker_gpg_key_url }}"
     dest: "{{ keyring_path }}/docker.asc"
     mode: 0444
-  timeout: 30
+    timeout: 30
+  register: gpg_download_result
+  until: gpg_download_result is success
+  retries: 5
+  delay: 10
 
 - name: Install Docker APT repository
   deb822_repository:
@@ -37,6 +41,10 @@
     state: present
     update_cache: yes
   timeout: 120
+  register: apt_result
+  until: apt_result is succeeded
+  retries: 5
+  delay: 15
 
 - name: Ensure Docker service is running
   service:

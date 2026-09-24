@@ -22,7 +22,7 @@ jenkins:
       - key: "APP_SERVER_IP"
         value: "{{ ips.app_server_ip }}"
       - key: "VAULT_IP"
-        value: "{{ ips.vault_server_ip }}"
+        value: "{{ ips.ci_server_ip }}"
       - key: "VAULT_PORT"
         value: "8200"
       - key: "YCR_ID"
@@ -43,6 +43,6 @@ unclassified:
       engineVersion: 2
       timeout: 60
       vaultCredentialId: "vault-approle"
-      vaultUrl: "http://{{ ips.vault_server_ip }}:8200"
+      vaultUrl: "http://{{ ips.ci_server_ip }}:8200"
 jobs:
   - file: /var/jenkins_home/job.groovy
