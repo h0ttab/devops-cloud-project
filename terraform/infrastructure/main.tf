@@ -1,10 +1,13 @@
 resource "local_file" "ansible_inventory" {
   content  = <<-EOT
-  [app_nodes]
+  [app_node]
   ${yandex_compute_instance.node["app-server"].network_interface.0.nat_ip_address}
 
-  [ci_nodes]
+  [ci_node]
   ${yandex_compute_instance.node["ci-server"].network_interface.0.nat_ip_address}
+
+  [obs_node]
+  ${yandex_compute_instance.node["obs-server"].network_interface.0.nat_ip_address}
 
   [all:vars]
   ansible_user = ubuntu
@@ -21,12 +24,13 @@ resource "local_file" "vault_server_ip" {
   filename = "${path.module}/../vault/terraform.tfvars"
 }
 
-resource "local_file" "jcasc_ips" {
+resource "local_file" "node_ips" {
   content  = <<-EOT
-  vault_server_ip: "${yandex_compute_instance.node["ci-server"].network_interface.0.ip_address}"
+  ci_server_ip: "${yandex_compute_instance.node["ci-server"].network_interface.0.ip_address}"
   app_server_ip: "${yandex_compute_instance.node["app-server"].network_interface.0.ip_address}"
+  obs_server_ip: "${yandex_compute_instance.node["obs-server"].network_interface.0.ip_address}"
   EOT
-  filename = "${path.module}/../../ansible/roles/jenkins/vars/ips.yml"
+  filename = "${path.module}/../../ansible/ips.yml"
 }
 
 locals {
