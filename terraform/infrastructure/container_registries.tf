@@ -23,7 +23,7 @@ resource "yandex_container_repository" "container_repositories" {
 }
 
 variable "repositories" {
-  type = set(string)
+  type        = set(string)
   description = "List of container repository names to create"
 }
 
