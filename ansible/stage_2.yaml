@@ -1,0 +1,14 @@
+
+---
+
+- name: Setup Jenkins on CI/CD node
+  hosts: ci_node
+  become: true
+  roles:
+    - jenkins
+
+- name: Setup Grafana and Prometheus on obs-server
+  hosts: obs_node
+  become: true
+  roles:
+    - observability

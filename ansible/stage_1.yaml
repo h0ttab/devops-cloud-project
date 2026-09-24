@@ -1,0 +1,25 @@
+
+---
+
+- name: Setup application server
+  hosts: app_node
+  become: true
+  roles:
+    - docker
+    - node-exporter
+    - application-server
+
+- name: Setup observability server
+  hosts: obs_node
+  become: true
+  roles:
+    - docker
+    - node-exporter
+
+- name: Setup CI/CD server
+  hosts: ci_node
+  become: true
+  roles:
+    - docker
+    - node-exporter
+    - vault
