@@ -5,6 +5,6 @@
   file:
     path: "{{ application_directory_path }}"
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: "{{ application_directory_owner }}"
     group: "{{ application_directory_group }}"

@@ -4,7 +4,7 @@
 - name: Create Vault directories
   file:
     path: "{{ item }}"
-    mode: 0755
+    mode: '0755'
     owner: 100 # Vault's internal user UID
     group: 100 # Vault's internal user GID
     state: directory

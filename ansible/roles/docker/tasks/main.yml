@@ -11,14 +11,14 @@
 - name: Create keyrings directory
   file:
     state: directory
-    mode: 0755
+    mode: '0755'
     dest: "{{ keyring_path }}"
 
 - name: Download GPG key
   get_url:
     url: "{{ docker_gpg_key_url }}"
     dest: "{{ keyring_path }}/docker.asc"
-    mode: 0444
+    mode: '0444'
     timeout: 30
   register: gpg_download_result
   until: gpg_download_result is success

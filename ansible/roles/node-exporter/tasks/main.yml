@@ -14,7 +14,7 @@
   get_url:
     url: "{{ node_exporter_download_url }}"
     dest: "/var/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    mode: 0755
+    mode: '0755'
     timeout: 60
   register: download_result
   until: download_result is succeeded
@@ -31,7 +31,7 @@
   copy:
     src: "/var/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
     dest: /usr/local/bin/node_exporter
-    mode: 0755
+    mode: '0755'
     owner: node_exporter
     remote_src: yes
 

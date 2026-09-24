@@ -11,7 +11,7 @@
   file:
     path: "/opt/{{ item }}"
     state: directory
-    mode: 0755
+    mode: '0755'
   register: jenkins_dir
   loop:
     - jenkins
@@ -21,7 +21,7 @@
   template:
     src: "{{ item.value.src }}"
     dest: "{{ item.value.dest }}"
-    mode: 0600
+    mode: '0600'
     owner: "{{ os_user }}"
   loop: "{{ files | dict2items }}"
   vars:
