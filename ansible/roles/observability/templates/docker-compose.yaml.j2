@@ -1,0 +1,27 @@
+services:
+
+  prometheus:
+    image: prom/prometheus:v3.13.3
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    volumes:
+      - "{{ directories.results[0].path }}:/etc/prometheus"
+
+  grafana:
+    image: grafana/grafana:13.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER__FILE=/var/lib/grafana/admin_user.secret
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/var/lib/grafana/admin_password.secret
+    volumes:
+      - "{{ directories.results[1].path }}/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml"
+      - "{{ directories.results[1].path }}/node_exporter_full.json:/etc/grafana/dashboards/json/node_exporter_full.json"
+      - "{{ directories.results[1].path }}/dashboard_provider.yml:/etc/grafana/provisioning/dashboards/dashboard_provider.yml"
+      - "{{ directories.results[1].path }}:/var/lib/grafana"

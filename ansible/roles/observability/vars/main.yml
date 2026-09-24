@@ -1,0 +1,1 @@
+grafana_credentials: "{{ lookup('file', playbook_dir ~ '/../secrets/grafana/credentials.json') | from_json }}"

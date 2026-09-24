@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['{{ ips.app_server_ip }}:9100']
+        labels:
+          nodename: 'app_server'
+
+      - targets: ['{{ ips.ci_server_ip }}:9100']
+        labels:
+          nodename: 'ci_server'
+
+      - targets: ['{{ ips.obs_server_ip }}:9100']
+        labels:
+          nodename: 'obs_server'
