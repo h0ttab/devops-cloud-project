@@ -8,4 +8,5 @@ ansible/*.ini
 secrets/
 diff.txt
 *.tar
-ansible/roles/jenkins/vars/ips.yml
+ansible/ips.yml
+terraform/vault/*.tfvars
