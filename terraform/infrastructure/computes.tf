@@ -69,7 +69,8 @@ locals {
       disk_size = 30
       security_group_ids = [
         yandex_vpc_security_group.sg_common.id,
-        yandex_vpc_security_group.sg_metrics.id
+        yandex_vpc_security_group.sg_metrics.id,
+        yandex_vpc_security_group.sg_logs.id
       ]
     }
   }
