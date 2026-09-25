@@ -1,6 +1,6 @@
-resource "yandex_vpc_security_group" "sg_ssh" {
-  name        = "ssh-security-group"
-  description = "SSH ingress allow security group"
+resource "yandex_vpc_security_group" "sg_common" {
+  name        = "common-security-group"
+  description = "Allow any egress, SSH ingress and node exporter ingress security group"
   folder_id   = var.folder_id
   network_id  = yandex_vpc_network.vpc_net.id
 
@@ -13,6 +13,19 @@ resource "yandex_vpc_security_group" "sg_ssh" {
     protocol       = "TCP"
     port           = 22
     v4_cidr_blocks = flatten([local.localhost_public_ip, local.cloud_subnets])
+  }
+
+  ingress {
+    description    = "Allow Prometheus node exporter port"
+    protocol       = "TCP"
+    port           = 9100
+    v4_cidr_blocks = local.cloud_subnets
+  }
+
+  egress {
+    description    = "Allow ALL"
+    protocol       = "ANY"
+    v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -48,23 +61,6 @@ resource "yandex_vpc_security_group" "sg_http" {
   }
 }
 
-resource "yandex_vpc_security_group" "sg_egress_all" {
-  name        = "egress-all-security-group"
-  description = "Allow all egress traffic security group"
-  folder_id   = var.folder_id
-  network_id  = yandex_vpc_network.vpc_net.id
-
-  labels = {
-    managed_by = "terraform"
-  }
-
-  egress {
-    description    = "Allow ALL"
-    protocol       = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "yandex_vpc_security_group" "sg_jenkins" {
   name        = "jenkins-security-group"
   description = "Jenkins security group"
@@ -82,7 +78,7 @@ resource "yandex_vpc_security_group" "sg_jenkins" {
     v4_cidr_blocks = local.cloud_subnets
   }
 
-    ingress {
+  ingress {
     description    = "Allow Jenkins HTTP UI"
     protocol       = "TCP"
     port           = 8080
@@ -115,9 +111,9 @@ resource "yandex_vpc_security_group" "sg_vault" {
   }
 }
 
-resource "yandex_vpc_security_group" "sg_grafana" {
-  name        = "grafana-security-group"
-  description = "Grafana dashboard security group"
+resource "yandex_vpc_security_group" "sg_metrics" {
+  name        = "metrics-security-group"
+  description = "Grafana and Prometheus security group"
   folder_id   = var.folder_id
   network_id  = yandex_vpc_network.vpc_net.id
 
@@ -126,45 +122,16 @@ resource "yandex_vpc_security_group" "sg_grafana" {
   }
 
   ingress {
-    description    = "Allow Grafana port"
+    description    = "Allow Grafana UI"
     protocol       = "TCP"
     port           = 3000
     v4_cidr_blocks = [local.localhost_public_ip]
   }
-}
-
-resource "yandex_vpc_security_group" "sg_prometheus" {
-  name        = "prometheus-security-group"
-  description = "Prometheus security group"
-  folder_id   = var.folder_id
-  network_id  = yandex_vpc_network.vpc_net.id
-
-  labels = {
-    managed_by = "terraform"
-  }
 
   ingress {
-    description    = "Allow Prometheus port ingress"
+    description    = "Allow Prometheus ingress"
     protocol       = "TCP"
     port           = 9090
     v4_cidr_blocks = flatten([local.localhost_public_ip, local.cloud_subnets])
-  }
-}
-
-resource "yandex_vpc_security_group" "sg_node_exporter" {
-  name        = "node-exporter-security-group"
-  description = "Prometheus node exporter security group"
-  folder_id   = var.folder_id
-  network_id  = yandex_vpc_network.vpc_net.id
-
-  labels = {
-    managed_by = "terraform"
-  }
-
-  ingress {
-    description    = "Allow Prometheus node exporter port"
-    protocol       = "TCP"
-    port           = 9100
-    v4_cidr_blocks = local.cloud_subnets
   }
 }

@@ -47,9 +47,7 @@ locals {
       memory    = 2
       disk_size = 20
       security_group_ids = [
-        yandex_vpc_security_group.sg_egress_all.id,
-        yandex_vpc_security_group.sg_node_exporter.id,
-        yandex_vpc_security_group.sg_ssh.id,
+        yandex_vpc_security_group.sg_common.id,
         yandex_vpc_security_group.sg_http.id
       ]
     }
@@ -59,9 +57,7 @@ locals {
       memory    = 4
       disk_size = 30
       security_group_ids = [
-        yandex_vpc_security_group.sg_egress_all.id,
-        yandex_vpc_security_group.sg_node_exporter.id,
-        yandex_vpc_security_group.sg_ssh.id,
+        yandex_vpc_security_group.sg_common.id,
         yandex_vpc_security_group.sg_jenkins.id,
         yandex_vpc_security_group.sg_vault.id
       ]
@@ -72,11 +68,8 @@ locals {
       memory    = 4
       disk_size = 30
       security_group_ids = [
-        yandex_vpc_security_group.sg_egress_all.id,
-        yandex_vpc_security_group.sg_node_exporter.id,
-        yandex_vpc_security_group.sg_ssh.id,
-        yandex_vpc_security_group.sg_grafana.id,
-        yandex_vpc_security_group.sg_prometheus.id
+        yandex_vpc_security_group.sg_common.id,
+        yandex_vpc_security_group.sg_metrics.id
       ]
     }
   }
