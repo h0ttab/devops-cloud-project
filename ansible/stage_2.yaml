@@ -7,8 +7,8 @@
   roles:
     - jenkins
 
-- name: Setup Grafana and Prometheus on obs-server
+- name: Setup observability tools on obs-server
   hosts: obs_node
   become: true
   roles:
-    - observability
+    - metrics
