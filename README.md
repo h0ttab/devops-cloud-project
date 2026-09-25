@@ -5,6 +5,8 @@
 ![Ansible](https://img.shields.io/badge/Ansible-2.21.2-EE0000?style=flat\&logo=ansible\&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-3.13.3-E6522C?style=flat&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-13.0-F46800?style=flat&logo=grafana&logoColor=white)
+![OpenSearch](https://img.shields.io/badge/OpenSearch-3.8.0-005BA6?style=flat&logo=opensearch&logoColor=white)
+![Fluent Bit](https://img.shields.io/badge/Fluent_Bit-5.1.2-49B882?style=flat&logo=fluentbit&logoColor=white)
 ![Jenkins](https://img.shields.io/badge/Jenkins-2.568.2-D24939?style=flat\&logo=jenkins\&logoColor=white)
 ![HashiCorp Vault](https://img.shields.io/badge/Vault-2.0.3-000000?style=flat\&logo=vault\&logoColor=white)
 ![Yandex Cloud](https://img.shields.io/badge/Yandex_Cloud-IaaS-FC3F1D?style=flat\&logo=yandex\&logoColor=white)
@@ -12,7 +14,7 @@
 
 Демонстрационный проект автоматизированного развёртывания облачной инфраструктуры и организации CI/CD в Yandex Cloud.
 
-Система реализует подходы **Infrastructure as Code (IaC)** и **Configuration as Code (CaC)**: от создания сетевой инфраструктуры и вычислительных узлов до настройки сервисов, управления секретами и автоматической доставки Java-приложения.
+Система реализует подходы **Infrastructure as Code (IaC)** и **Configuration as Code (CaC)**: от создания сетевой инфраструктуры и вычислительных серверов до настройки сервисов, управления секретами и автоматической доставки Java-приложения.
 
 ## Содержание
 
@@ -40,15 +42,16 @@
 
     * [Если что-то пошло не так с развёртыванием Vault или Jenkins](#если-что-то-пошло-не-так-с-развёртыванием-vault-или-jenkins)  
     * [Шаг 1: Облачная инфраструктура](#шаг-1-облачная-инфраструктура)
-    * [Шаг 2: Базовая настройка узлов](#шаг-2-базовая-настройка-узлов)
+    * [Шаг 2: Базовая настройка серверов](#шаг-2-базовая-настройка-серверов)
     * [Шаг 3: Инициализация Vault](#шаг-3-инициализация-vault)
     * [Шаг 4: Настройка сервисной роли Terraform](#шаг-4-настройка-сервисной-роли-terraform)
     * [Шаг 5: Учётная запись администратора Vault](#шаг-5-учётная-запись-администратора-vault)
     * [Шаг 6: Декларативная настройка Vault](#шаг-6-декларативная-настройка-vault)
     * [Шаг 7: Учётная запись администратора Jenkins](#шаг-7-учётная-запись-администратора-jenkins)
     * [Шаг 8: Учётная запись администратора Grafana](#шаг-8-учётная-запись-администратора-grafana)
-    * [Шаг 9: Развёртывание Jenkins и стека мониторинга](#шаг-9-развёртывание-jenkins-и-стека-мониторинга)
-  * [Проверка работоспособности и запуск доставки](#проверка-работоспособности-и-запуск-доставки)
+    * [Шаг 9: Учётная запись администратора OpenSearch](#шаг-9-учётная-запись-администратора-opensearch)
+    * [Шаг 10: Развёртывание платформы и сервисов доставки](#шаг-10-развёртывание-платформы-и-сервисов-доставки)
+  * [Проверка работоспособности и деплой приложения](#проверка-работоспособности-и-деплой-приложения)
   * [Удаление инфраструктуры](#удаление-инфраструктуры)
 * [Jenkinsfile](#jenkinsfile)
 * [Roadmap](#roadmap)
@@ -67,7 +70,7 @@
 
 ### Инфраструктурная топология
 
-Инфраструктура развёрнута в изолированной виртуальной сети Yandex Cloud VPC и разделена между управляющим узлом `ci-server`, целевым узлом приложения `app-server` и узлом мониторинга `obs-server`.
+Инфраструктура развёрнута в изолированной виртуальной сети Yandex Cloud VPC и разделена между управляющим сервером `ci-server`, целевым сервером приложения `app-server` и сервером мониторинга `obs-server`.
 
 ```mermaid
 graph TB
@@ -80,6 +83,7 @@ graph TB
                 Jenkins["Jenkins (JCasC + Job DSL)<br/>:8080"]
                 Vault["HashiCorp Vault Server<br/>:8200"]
                 NodeExpCI["Node Exporter<br/>:9100"]
+                FBCI["Fluent Bit (Agent)"]
             end
 
             subgraph AppServer ["App Node (app-server)"]
@@ -87,12 +91,16 @@ graph TB
                 Backend["Core Backend (Java)<br/>:9090"]
                 Postgres[("PostgreSQL<br/>:5432")]
                 NodeExpApp["Node Exporter<br/>:9100"]
+                FBApp["Fluent Bit (Agent)"]
             end
 
             subgraph ObsServer ["Observability Node (obs-server)"]
                 Prometheus["Prometheus<br/>:9090"]
                 Grafana["Grafana<br/>:3000"]
+                OpenSearch["OpenSearch Server<br/>:9200"]
+                Dashboards["OpenSearch Dashboards<br/>:5601"]
                 NodeExpObs["Node Exporter<br/>:9100"]
+                FBObs["Fluent Bit (Agent)"]
             end
 
         end
@@ -104,6 +112,7 @@ graph TB
     User(["Engineer"]) -->|SSH / HTTP| CIServer
     User -->|HTTP :8080| Gateway
     User -->|HTTP :3000| Grafana
+    User -->|HTTP :5601| Dashboards
 
     Jenkins -->|Auth / Read Secrets| Vault
     Jenkins -->|Docker Push / Pull| YCR
@@ -111,10 +120,15 @@ graph TB
 
     Gateway --> Backend --> Postgres
 
-    Prometheus -.->|Scrape :9100| NodeExpCI
-    Prometheus -.->|Scrape :9100| NodeExpApp
-    Prometheus -.->|Scrape :9100| NodeExpObs
+    Prometheus -.->|Scrape metrics :9100| NodeExpCI
+    Prometheus -.->|Scrape metrics :9100| NodeExpApp
+    Prometheus -.->|Scrape metrics :9100| NodeExpObs
     Grafana -->|Query PromQL| Prometheus
+
+    FBCI -.->|Ship logs :9200| OpenSearch
+    FBApp -.->|Ship logs :9200| OpenSearch
+    FBObs -.->|Ship logs :9200| OpenSearch
+    Dashboards -->|Search API| OpenSearch
 ```
 
 ### Сквозной процесс доставки
@@ -182,7 +196,9 @@ sequenceDiagram
 
 ### Метрики и логи (Observability)
 
-* **Автоматизированное развёртывание стека мониторинга:** развёртывание Prometheus и Grafana полностью автоматизировано. Источники данных (Datasources) и дашборды («Node Exporter Full») автоматически настраиваются через YAML/JSON конфигурации без необходимости ручной настройки в UI Grafana. Установка Node Exporter и интеграция с Prometheus также автоматизированы через Ansible.
+* **Автоматизированный стек метрик:** развёртывание Prometheus и Grafana полностью автоматизировано через Ansible. Источники данных (Datasources) и дашборд системных метрик («Node Exporter Full») импортируются декларативно без участия UI. Node Exporter развернут как systemd-сервис на всех серверах.
+* **Централизованный сбор логов:** хранилище OpenSearch и интерфейс OpenSearch Dashboards защищены базовой аутентификацией. Конфигурация Dashboards (Index Patterns `docker-logs*` и `system-logs*`) автоматически импортируется в OpenSearch Dashboards через Saved Objects API при развертывании.
+* **Двухпоточный сбор логов:** Fluent Bit собирает логи Docker-контейнеров и системные журналы Linux (`systemd/journald`), обогащает их именами хостов и раздельно направляет в соответствующие индексы OpenSearch.
 
 ### CI/CD и Jenkins as Code
 
@@ -204,7 +220,8 @@ Jenkins разворачивается без ручной конфигурац�
 > **Для пользователей из России и Беларуси:** для установки Terraform и Terraform CLI с официального сайта, а также для установки необходимых провайдеров через `terraform init` может потребоваться VPN для смены IP-адреса в связи с региональными ограничениями по IP на стороне HashiCorp.
 
 Для запуска проекта необходимы:
-* macOS / Linux с графическим интерфейсом (работоспособность проверена на `macOS 15.7.9` и `Ubuntu 22.04`)
+* macOS / Linux с графическим интерфейсом (протестировано на `macOS 15.7.9` и `Ubuntu 22.04`)
+* Mozilla Firefox / Google Chrome актуальной версии
 * Terraform `>= 1.15.8`
 * Ansible `>= 2.21.2` + коллекция `community.docker` (установка: `ansible-galaxy collection install community.docker`)
 * Python `>= 3.14.6` + `python3-pip` + `python3-venv`
@@ -214,28 +231,33 @@ Jenkins разворачивается без ручной конфигурац�
 * Git
 * Bash / zsh
 * cURL
-* Mozilla Firefox / Google Chrome актуальной версии
 
 ### Последовательность развёртывания
 
 ```text
 Terraform
    ↓
-Yandex Cloud infrastructure
+Yandex Cloud infrastructure (VPC, VMs, SGs, YCR)
    ↓
-Ansible
+Ansible (Stage 1)
    ↓
-Docker + Vault
+Docker + Node Exporter + Vault
    ↓
-Vault bootstrap
+Vault bootstrap & unseal
    ↓
-Terraform Vault Provider
+Terraform Vault Provider (AppRole & secrets)
    ↓
-Prometheus & Grafana Stack
+Ansible (Stage 2)
+   ↓
+Prometheus & Grafana Stack (Metrics)
+   ↓
+OpenSearch & Dashboards (Storage & CaC)
+   ↓
+Fluent Bit (Host & Docker log shippers)
    ↓
 Jenkins (JCasC + Job DSL)
    ↓
-Build application images
+Build application images (Docker Buildx)
    ↓
 Push to Yandex Container Registry
    ↓
@@ -243,7 +265,7 @@ SSH deployment
    ↓
 Docker Compose
    ↓
-Healthcheck
+Application Healthcheck
 ```
 
 ### Подготовка облачной среды
@@ -310,7 +332,7 @@ python3 scripts/python/init_secrets_dir_structure.py
 
 #### 3. Добавьте зеркало Yandex для реестра провайдеров Terraform
 
-Это необходимо для того, чтобы `terraform init` смог загрузить корректный провайдер для Yandex Cloud, т.к. в официальном реестре провайдеров Terraform провайдер Yandex Cloud более не поддерживается в виду региональных ограничений.
+Это необходимо для того, чтобы `terraform init` смог загрузить корректный провайдер для Yandex Cloud, так как в официальном реестре провайдеров Terraform провайдер Yandex Cloud более не поддерживается ввиду региональных ограничений.
 
 ```bash
 cat <<EOF > ~/.terraformrc
@@ -332,7 +354,7 @@ EOF
 
 Переместите созданный ранее JSON-ключ в `secrets/cloud/terraform-sa-key.json`
 
-#### 2. SSH-ключ для CI/CD и доступа к хостам
+#### 2. SSH-ключ для CI/CD и доступа к серверам
 
 Создайте пару `ed25519` без парольной фразы:
 
@@ -394,7 +416,7 @@ bash ./scripts/bash/vault_reset.sh <CI_SERVER_PUBLIC_IP>
 ```bash
 bash ./scripts/bash/jenkins_reset.sh <CI_SERVER_PUBLIC_IP>
 ```
-> После сброса Jenkins необходимо будет выполнить шаги 7-9 из раздела ["Развёртывание платформы"](#шаг-7-учётная-запись-администратора-jenkins).
+> После сброса Jenkins необходимо будет заново выполнить Шаг 7 и Шаг 10 из раздела ["Развёртывание платформы"](#шаг-7-учётная-запись-администратора-jenkins).
 
 #### Шаг 1: Облачная инфраструктура
 
@@ -420,7 +442,7 @@ cd ../..
 * `terraform/vault/terraform.tfvars`;
 * `ansible/ips.yml`.
 
-#### Шаг 2: Базовая настройка узлов
+#### Шаг 2: Базовая настройка серверов
 
 ```bash
 cd ansible
@@ -430,7 +452,7 @@ ansible-playbook stage_1.yaml
 cd ..
 ```
 
-На всех трех узлах устанавливается Docker и разворачивается systemd-сервис Node Exporter. На `ci-server` запускается sealed-контейнер HashiCorp Vault. На `app-server` подготавливаются каталоги для приложения.
+На всех трех серверах устанавливается Docker и разворачивается systemd-сервис Node Exporter. На `ci-server` запускается sealed-контейнер HashiCorp Vault. На `app-server` подготавливаются каталоги для приложения.
 
 #### Шаг 3: Инициализация Vault
 
@@ -516,7 +538,15 @@ python3 scripts/python/gen_grafana_creds.py
 
 Позволяет задать логин и пароль для учётной записи администратора Grafana. Сохраняет полученные учётные данные в `secrets/grafana/credentials.json`.
 
-#### Шаг 9: Развёртывание Jenkins и стека мониторинга
+#### Шаг 9: Учётная запись администратора OpenSearch
+
+```bash
+python3 scripts/python/gen_opensearch_creds.py
+```
+
+Позволяет задать пароль администратора для OpenSearch и Dashboards с автоматической проверкой на соответствие строгим требованиям сложности (длина, спецсимволы, регистр). Сохраняет пароль в `secrets/opensearch/credentials.json`.
+
+#### Шаг 10: Развёртывание платформы и сервисов доставки
 
 ```bash
 cd ansible
@@ -534,11 +564,13 @@ cd ..
 * настраиваются пользователи и интеграция с Vault;
 * Job DSL создает задачу (job) `install-app`;
 * На `obs-server` разворачиваются Prometheus и Grafana;
-* В Prometheus настраивается сбор метрик со всех узлов сети при помощи Node Exporter;
-* В Grafana автоматически импортируется дашборд системных метрик (Node Exporter Full) и подключается Prometheus в качестве источника данных (datasource).
+* В Prometheus настраивается сбор метрик со всех серверов сети при помощи Node Exporter;
+* В Grafana автоматически импортируется дашборд системных метрик (Node Exporter Full) и подключается Prometheus в качестве источника данных (datasource);
+* На `obs-server` запускается OpenSearch и OpenSearch Dashboards с автоматическим импортом настроек;
+* На всех серверах разворачивается агент Fluent Bit и запускается сбор логов в реальном времени.
 
 
-## Проверка работоспособности и запуск доставки
+## Проверка работоспособности и деплой приложения
 
 ### 1. Доступ к интерфейсам
 **Jenkins UI**
@@ -565,13 +597,21 @@ http://<CI_SERVER_PUBLIC_IP>:8200
 
 Аутентификация выполняется через выбор способа авторизации `Userpass` с учётными данными из шага 5.
 
-### 2. Запуск pipeline
+**OpenSearch Dashboards UI**
+
+```text
+http://<OBS_SERVER_PUBLIC_IP>:5601
+```
+
+Используются учётные данные из шага 9 (логин `admin` и заданный пароль).
+
+### 2. Запуск пайплайна доставки приложения
 
 1. Откройте Jenkins.
 2. Выберите сборку `install-app`.
 3. Нажмите **Build Now**.
 
-При первом запуске сборки не будет возможности указать параметры (**Build with parameters**), т.к. список параметров прописан в Jenkinsfile, который находится в репозитории приложения, и на момент первого запуска сборки этот файл ещё не будет прочитан Jenkins. Первый запуск либо использует параметры по умолчанию, если они указаны в Jenkinsfile, либо сборка упадёт с ошибкой из-за того, что Jenkins не смог получить параметры.
+При первом запуске сборки не будет возможности указать параметры (**Build with parameters**), так как список параметров прописан в Jenkinsfile, который находится в репозитории приложения, и на момент первого запуска сборки этот файл ещё не будет прочитан Jenkins. Первый запуск либо использует параметры по умолчанию, если они указаны в Jenkinsfile, либо сборка упадёт с ошибкой из-за того, что Jenkins не смог получить параметры.
 
 Вне зависимости от результата выполнения первой сборки, сразу после её завершения кнопка **Build Now** поменяется уже на **Build with Parameters**, и параметры можно будет задать в интерфейсе Jenkins перед запуском новой сборки.
 
@@ -651,8 +691,6 @@ Jenkinsfile в этом репозитории приведен как част�
 
 ### Observability
 
-* Fluent Bit для сбора логов.
-* OpenSearch и OpenSearch Dashboards.
 * Alertmanager для алертинга.
 
 ### Kubernetes и GitOps

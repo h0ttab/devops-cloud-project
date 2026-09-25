@@ -138,7 +138,7 @@ resource "yandex_vpc_security_group" "sg_metrics" {
 
 resource "yandex_vpc_security_group" "sg_logs" {
   name        = "logs-security-group"
-  description = "Opensearch and Opensearch Dashboards security group"
+  description = "OpenSearch and OpenSearch Dashboards security group"
   folder_id   = var.folder_id
   network_id  = yandex_vpc_network.vpc_net.id
 
@@ -147,14 +147,14 @@ resource "yandex_vpc_security_group" "sg_logs" {
   }
 
   ingress {
-    description    = "Allow Opensearch ingress port for logs delivery by FluentBit agents"
+    description    = "Allow OpenSearch ingress port for logs shipping by FluentBit agents"
     protocol       = "TCP"
     port           = 9200
     v4_cidr_blocks = flatten([local.cloud_subnets])
   }
 
   ingress {
-    description    = "Allow Opensearch Dashboards UI"
+    description    = "Allow OpenSearch Dashboards UI"
     protocol       = "TCP"
     port           = 5601
     v4_cidr_blocks = [local.localhost_public_ip]

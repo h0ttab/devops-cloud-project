@@ -36,7 +36,7 @@
 
 - name: Install Fluent Bit package
   apt:
-    name: fluent-bit
+    name: "fluent-bit={{ fluent_bit_version }}"
     state: present
     update_cache: yes
   timeout: 120

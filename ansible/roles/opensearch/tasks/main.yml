@@ -2,14 +2,14 @@
 ---
 # tasks file for opensearch
 
-- name: Raise mmap limit for Opensearch proper operation
+- name: Raise mmap limit for OpenSearch proper operation
   ansible.posix.sysctl:
     name: vm.max_map_count
     value: '262144'
     state: present
     reload: yes
 
-- name: Create Opensearch and Opensearch Dashboards data directories
+- name: Create OpenSearch and OpenSearch Dashboards data directories
   file:
     path: "/opt/{{ item.value.name }}"
     state: directory
@@ -51,7 +51,7 @@
         dest: "{{ directories.results[1].path }}/opensearch-dashboards.env"
 
 
-- name: Start Opensearch and Opensearch Dashboards compose file
+- name: Start OpenSearch and OpenSearch Dashboards compose file
   community.docker.docker_compose_v2:
     project_src: "{{ directories.results[1].path }}"
   register: docker_compose_result
@@ -59,20 +59,20 @@
   retries: 5
   delay: 10
 
-- name: Copy Opensearch Dashboards config to remote host temp directory
+- name: Copy OpenSearch Dashboards config to remote host temp directory
   copy:
     src: dashboards_config.ndjson
     dest: /tmp/dashboards_config.ndjson
     mode: '0600'
 
-- name: Wait for Opensearch Dashboards to start listening on port 5601
+- name: Wait for OpenSearch Dashboards to start listening on port 5601
   wait_for:
     port: 5601
     host: 127.0.0.1
     delay: 10
     timeout: 120
 
-- name: Import Opensearch Dashboards config
+- name: Import OpenSearch Dashboards config
   command: >
     curl -s -f -X POST "http://localhost:5601/api/saved_objects/_import?overwrite=true"
     -H "osd-xsrf: true"
