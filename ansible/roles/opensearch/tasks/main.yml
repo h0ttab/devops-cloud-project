@@ -32,24 +32,24 @@
     dest: "{{ directories.results[1].path }}/docker-compose.yaml"
     mode: "0644"
     owner: "{{ opensearch_user_id }}"
+  no_log: true
 
 - name: Create .env files in docker-compose directory on the remote host
-  copy:
+  template:
+    src: "{{ item.value.src }}"
     dest: "{{ item.value.dest }}"
-    content: "{{ item.value.content }}"
     mode: '0400'
     owner: "{{ opensearch_user_id }}"
   loop: "{{ env_files | dict2items }}"
   vars:
     env_files:
       opensearch:
+        src: opensearch.env.j2
         dest: "{{ directories.results[1].path }}/opensearch.env"
-        content: "OPENSEARCH_INITIAL_ADMIN_PASSWORD={{ opensearch_credentials.password }}"
       opensearch-dashboards:
+        src: opensearch-dashboards.env.j2
         dest: "{{ directories.results[1].path }}/opensearch-dashboards.env"
-        content: |
-          OPENSEARCH_USERNAME=admin
-          OPENSEARCH_PASSWORD={{ opensearch_credentials.password }}
+
 
 - name: Start Opensearch and Opensearch Dashboards compose file
   community.docker.docker_compose_v2:

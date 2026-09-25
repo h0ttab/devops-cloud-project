@@ -39,6 +39,7 @@
   template:
     src: node_exporter.service.j2
     dest: /etc/systemd/system/node_exporter.service
+  no_log: true
 
 - name: Setup systemd for node exporter
   systemd_service:

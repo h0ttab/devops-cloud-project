@@ -24,6 +24,7 @@
     mode: '0600'
     owner: "{{ os_user }}"
   loop: "{{ files | dict2items }}"
+  no_log: true
   vars:
     files:
       casc:

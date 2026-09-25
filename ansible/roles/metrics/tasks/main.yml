@@ -41,6 +41,7 @@
     src: "{{ item.value.src }}"
     dest: "{{ item.value.dest }}"
   loop: "{{ templates | dict2items }}"
+  no_log: true
   vars:
     templates:
       prometheus:
