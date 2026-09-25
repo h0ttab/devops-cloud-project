@@ -58,3 +58,29 @@
   until: docker_compose_result is succeeded
   retries: 5
   delay: 10
+
+- name: Copy Opensearch Dashboards config to remote host temp directory
+  copy:
+    src: dashboards_config.ndjson
+    dest: /tmp/dashboards_config.ndjson
+    mode: '0600'
+
+- name: Wait for Opensearch Dashboards to start listening on port 5601
+  wait_for:
+    port: 5601
+    host: 127.0.0.1
+    delay: 10
+    timeout: 120
+
+- name: Import Opensearch Dashboards config
+  command: >
+    curl -s -f -X POST "http://localhost:5601/api/saved_objects/_import?overwrite=true"
+    -H "osd-xsrf: true"
+    -u "admin:{{ opensearch_credentials.password }}"
+    -F "file=@/tmp/dashboards_config.ndjson"
+  no_log: true
+
+- name: Clean up temp config file on remote host
+  file:
+    path: /tmp/dashboards_config.ndjson
+    state: absent

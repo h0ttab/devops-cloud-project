@@ -1,28 +1,26 @@
 
 ---
 
-- name: Setup application server
+- name: Stage I - App Server
   hosts: app_node
   become: true
   roles:
     - docker
     - node-exporter
     - application-server
-    - fluent-bit
 
-- name: Setup observability server
+- name: Stage I - Observability Server
   hosts: obs_node
   become: true
   roles:
     - docker
     - node-exporter
-    - fluent-bit
 
-- name: Setup CI/CD server
+
+- name: Stage I - CI/CD Server
   hosts: ci_node
   become: true
   roles:
     - docker
     - node-exporter
     - vault
-    - fluent-bit

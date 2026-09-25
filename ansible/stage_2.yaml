@@ -1,15 +1,23 @@
 
 ---
 
-- name: Setup Jenkins on CI/CD node
+- name: Stage II - CI/CD Server
   hosts: ci_node
   become: true
   roles:
     - jenkins
+    - fluent-bit
 
-- name: Setup observability tools on obs-server
+- name: Stage II - Observability Server
   hosts: obs_node
   become: true
   roles:
     - metrics
     - opensearch
+    - fluent-bit
+
+- name: Stage II - Application Server
+  hosts: app_node
+  become: true
+  roles:
+    - fluent-bit
