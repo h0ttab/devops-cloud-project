@@ -2,7 +2,7 @@ import json
 import pwinput
 username = input("Enter username: ")
 
-password = pwinput.pwinput(mask='', prompt='Enter password:')
+password = pwinput.pwinput(mask='', prompt='Enter password: ')
 
 data = {
     "username": username,
