@@ -1,0 +1,5 @@
+- name: restart fluent-bit
+  systemd_service:
+    name: fluent-bit.service
+    state: restarted
+    daemon_reload: yes

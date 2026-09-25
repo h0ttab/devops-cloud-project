@@ -1,0 +1,51 @@
+service:
+  flush: 1
+  log_level: info
+  parsers_file: /etc/fluent-bit/parsers.conf
+
+pipeline:
+  inputs:
+    - name: tail
+      path: /var/lib/docker/containers/*/*.log
+      parser: docker
+      tag: docker.*
+      db: /var/log/fluent-bit-docker.db
+    
+    - name: systemd
+      tag: host.*
+      read_from_tail: off
+      db: /var/log/fluent-bit-host.db
+  
+  filters:
+    - name: record_modifier
+      match: docker.*
+      record:
+        - hostname "{{ inventory_hostname }}"
+
+    - name: record_modifier
+      match: host.*
+      record:
+        - hostname "{{ inventory_hostname }}"
+
+  outputs:
+    - name: opensearch
+      match: docker.*
+      host: "{{ ips.obs_server_ip }}"
+      port: 9200
+      index: docker-logs
+      http_user: admin
+      http_passwd: "{{ opensearch_credentials.password }}"
+      tls: on
+      tls.verify: off
+      suppress_type_name: on
+
+    - name: opensearch
+      match: host.*
+      host: "{{ ips.obs_server_ip }}"
+      port: 9200
+      index: system-logs
+      http_user: admin
+      http_passwd: "{{ opensearch_credentials.password }}"
+      tls: on
+      tls.verify: off
+      suppress_type_name: on

@@ -8,6 +8,7 @@
     - docker
     - node-exporter
     - application-server
+    - fluent-bit
 
 - name: Setup observability server
   hosts: obs_node
@@ -15,6 +16,7 @@
   roles:
     - docker
     - node-exporter
+    - fluent-bit
 
 - name: Setup CI/CD server
   hosts: ci_node
@@ -23,3 +25,4 @@
     - docker
     - node-exporter
     - vault
+    - fluent-bit
