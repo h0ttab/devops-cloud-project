@@ -1,0 +1,7 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for opensearch
+opensearch_version: "3.8.0"
+opensearch_dashboards_version: "3.8.0"
+opensearch_user_id: "1000"
+opensearch_credentials: "{{ lookup('file', playbook_dir ~ '/../secrets/opensearch/credentials.json') | from_json }}"

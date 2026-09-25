@@ -1,0 +1,39 @@
+services:
+
+  opensearch:
+    image: "opensearchproject/opensearch:{{ opensearch_version }}"
+    container_name: opensearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+    env_file:
+      - ./opensearch.env
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+      discovery.type: "single-node"
+      bootstrap.memory_lock: "true"
+    cap_add:
+      - IPC_LOCK
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - "{{ directories.results[0].path }}:/usr/share/opensearch/data"
+
+  opensearch-dashboards:
+    image: "opensearchproject/opensearch-dashboards:{{ opensearch_dashboards_version }}"
+    container_name: opensearch-dashboards
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    env_file:
+      - ./opensearch-dashboards.env
+    environment:
+      OPENSEARCH_HOSTS: "[\"https://opensearch:9200\"]"
+      OPENSEARCH_SSL_VERIFICATIONMODE: "none"
+    depends_on:
+      - opensearch

@@ -33,7 +33,7 @@
         name: grafana_data
         owner: "{{ grafana_user_id }}"
       docker-compose:
-        name: observability_stack_docker
+        name: observability_stack_docker/metrics
         owner: docker
 
 - name: Generate config files from templates

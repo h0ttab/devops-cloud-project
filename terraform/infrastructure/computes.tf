@@ -65,7 +65,7 @@ locals {
 
     "obs-server" = {
       cores     = 2
-      memory    = 4
+      memory    = 6
       disk_size = 30
       security_group_ids = [
         yandex_vpc_security_group.sg_common.id,

@@ -1,0 +1,60 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for opensearch
+
+- name: Raise mmap limit for Opensearch proper operation
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    state: present
+    reload: yes
+
+- name: Create Opensearch and Opensearch Dashboards data directories
+  file:
+    path: "/opt/{{ item.value.name }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ item.value.owner }}"
+  register: directories
+  loop: "{{ dirs | dict2items}}"
+  vars:
+    dirs:
+      opensearch:
+        name: opensearch_data
+        owner: "{{ opensearch_user_id }}"
+      docker-compose:
+        name: observability_stack_docker/opensearch
+        owner: docker
+
+- name: Generate files from templates
+  template:
+    src: docker-compose.yaml.j2
+    dest: "{{ directories.results[1].path }}/docker-compose.yaml"
+    mode: "0644"
+    owner: "{{ opensearch_user_id }}"
+
+- name: Create .env files in docker-compose directory on the remote host
+  copy:
+    dest: "{{ item.value.dest }}"
+    content: "{{ item.value.content }}"
+    mode: '0400'
+    owner: "{{ opensearch_user_id }}"
+  loop: "{{ env_files | dict2items }}"
+  vars:
+    env_files:
+      opensearch:
+        dest: "{{ directories.results[1].path }}/opensearch.env"
+        content: "OPENSEARCH_INITIAL_ADMIN_PASSWORD={{ opensearch_credentials.password }}"
+      opensearch-dashboards:
+        dest: "{{ directories.results[1].path }}/opensearch-dashboards.env"
+        content: |
+          OPENSEARCH_USERNAME=admin
+          OPENSEARCH_PASSWORD={{ opensearch_credentials.password }}
+
+- name: Start Opensearch and Opensearch Dashboards compose file
+  community.docker.docker_compose_v2:
+    project_src: "{{ directories.results[1].path }}"
+  register: docker_compose_result
+  until: docker_compose_result is succeeded
+  retries: 5
+  delay: 10

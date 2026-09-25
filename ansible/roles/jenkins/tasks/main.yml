@@ -54,3 +54,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ jenkins_dir.results[0].path }}"
     build: always
+  register: docker_result
+  until: docker_result is succeeded
+  retries: 5
+  delay: 10
