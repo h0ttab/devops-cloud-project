@@ -1,13 +1,13 @@
 resource "local_file" "ansible_inventory" {
   content  = <<-EOT
   [app_node]
-  ${yandex_compute_instance.node["app-server"].network_interface.0.nat_ip_address}
+  ${yandex_compute_instance.node["app-server"].name} ansible_host=${yandex_compute_instance.node["app-server"].network_interface.0.nat_ip_address}
 
   [ci_node]
-  ${yandex_compute_instance.node["ci-server"].network_interface.0.nat_ip_address}
+  ${yandex_compute_instance.node["ci-server"].name} ansible_host=${yandex_compute_instance.node["ci-server"].network_interface.0.nat_ip_address}
 
   [obs_node]
-  ${yandex_compute_instance.node["obs-server"].network_interface.0.nat_ip_address}
+  ${yandex_compute_instance.node["obs-server"].name} ansible_host=${yandex_compute_instance.node["obs-server"].network_interface.0.nat_ip_address}
 
   [all:vars]
   ansible_user = ubuntu
