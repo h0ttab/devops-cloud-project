@@ -311,9 +311,9 @@ yc iam key create \
 #### 1. Клонируйте репозиторий и установите Python-зависимости
 
 ```bash
-git clone https://github.com/h0ttab/devops-cloud-project.git
+git clone https://github.com/h0ttab/devops-cloud-infrastructure.git
 
-cd devops-cloud-project
+cd devops-cloud-infrastructure
 
 # Создание и активация виртуального окружения Python, в которое будут установлены библиотеки, необходимые для дальнейших шагов
 python3 -m venv venv
