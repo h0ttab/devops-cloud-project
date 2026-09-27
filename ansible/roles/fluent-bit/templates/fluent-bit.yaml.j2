@@ -8,22 +8,17 @@ pipeline:
     - name: tail
       path: /var/lib/docker/containers/*/*.log
       parser: docker
-      tag: docker.*
+      tag: docker.containers
       db: /var/log/fluent-bit-docker.db
     
     - name: systemd
-      tag: host.*
-      read_from_tail: off
+      tag: host.systemd
+      read_from_tail: true
       db: /var/log/fluent-bit-host.db
   
   filters:
     - name: record_modifier
-      match: docker.*
-      record:
-        - hostname "{{ inventory_hostname }}"
-
-    - name: record_modifier
-      match: host.*
+      match: "*"
       record:
         - hostname "{{ inventory_hostname }}"
 
@@ -35,9 +30,9 @@ pipeline:
       index: docker-logs
       http_user: admin
       http_passwd: "{{ opensearch_credentials.password }}"
-      tls: on
-      tls.verify: off
-      suppress_type_name: on
+      tls: true
+      tls.verify: false
+      suppress_type_name: true
 
     - name: opensearch
       match: host.*
@@ -46,6 +41,6 @@ pipeline:
       index: system-logs
       http_user: admin
       http_passwd: "{{ opensearch_credentials.password }}"
-      tls: on
-      tls.verify: off
-      suppress_type_name: on
+      tls: true
+      tls.verify: false
+      suppress_type_name: true
